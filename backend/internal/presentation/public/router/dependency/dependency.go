@@ -1,6 +1,7 @@
 package dependency
 
 import (
+	"good-todo-go/internal/ent"
 	"good-todo-go/internal/infrastructure/database"
 	"good-todo-go/internal/infrastructure/environment"
 	"good-todo-go/internal/infrastructure/repository"
@@ -19,7 +20,10 @@ func BuildContainer() *dig.Container {
 	container.Provide(environment.LoadConfig)
 
 	// infrastructure
-	container.Provide(database.NewEntClient)
+	container.Provide(database.NewDBClient)
+	container.Provide(func(dbClient *database.DBClient) *ent.Client {
+		return dbClient.Ent
+	})
 
 	// pkg
 	container.Provide(func(cfg *environment.Config) *pkg.JWTService {
