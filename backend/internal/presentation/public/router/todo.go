@@ -10,6 +10,10 @@ func (s *Server) GetTodos(c echo.Context, params api.GetTodosParams) error {
 	return s.todoController.GetTodos(c, params)
 }
 
+func (s *Server) GetPublicTodos(c echo.Context, params api.GetPublicTodosParams) error {
+	return s.todoController.GetPublicTodos(c, params)
+}
+
 func (s *Server) CreateTodo(c echo.Context) error {
 	return s.todoController.CreateTodo(c)
 }

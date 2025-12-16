@@ -61,6 +61,7 @@ func toTodoResponse(out *output.TodoOutput) *api.TodoResponse {
 		Title:       &out.Title,
 		Description: &out.Description,
 		Completed:   &out.Completed,
+		IsPublic:    &out.IsPublic,
 		CreatedAt:   &createdAt,
 		UpdatedAt:   &updatedAt,
 	}
