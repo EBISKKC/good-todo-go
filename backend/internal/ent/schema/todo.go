@@ -33,6 +33,9 @@ func (Todo) Fields() []ent.Field {
 			Default(""),
 		field.Bool("completed").
 			Default(false),
+		field.Bool("is_public").
+			Default(false).
+			Comment("If true, visible to all users in the same tenant"),
 		field.Time("due_date").
 			Optional().
 			Nillable(),
@@ -72,5 +75,6 @@ func (Todo) Indexes() []ent.Index {
 		index.Fields("tenant_id"),
 		index.Fields("user_id"),
 		index.Fields("tenant_id", "user_id"),
+		index.Fields("tenant_id", "is_public"),
 	}
 }

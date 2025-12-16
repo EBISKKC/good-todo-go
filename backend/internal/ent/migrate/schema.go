@@ -29,6 +29,7 @@ var (
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "completed", Type: field.TypeBool, Default: false},
+		{Name: "is_public", Type: field.TypeBool, Default: false},
 		{Name: "due_date", Type: field.TypeTime, Nullable: true},
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -43,7 +44,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "todos_users_todos",
-				Columns:    []*schema.Column{TodosColumns[9]},
+				Columns:    []*schema.Column{TodosColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -57,12 +58,17 @@ var (
 			{
 				Name:    "todo_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{TodosColumns[9]},
+				Columns: []*schema.Column{TodosColumns[10]},
 			},
 			{
 				Name:    "todo_tenant_id_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{TodosColumns[1], TodosColumns[9]},
+				Columns: []*schema.Column{TodosColumns[1], TodosColumns[10]},
+			},
+			{
+				Name:    "todo_tenant_id_is_public",
+				Unique:  false,
+				Columns: []*schema.Column{TodosColumns[1], TodosColumns[5]},
 			},
 		},
 	}

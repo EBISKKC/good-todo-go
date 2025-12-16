@@ -67,6 +67,20 @@ func (_c *TodoCreate) SetNillableCompleted(v *bool) *TodoCreate {
 	return _c
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_c *TodoCreate) SetIsPublic(v bool) *TodoCreate {
+	_c.mutation.SetIsPublic(v)
+	return _c
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_c *TodoCreate) SetNillableIsPublic(v *bool) *TodoCreate {
+	if v != nil {
+		_c.SetIsPublic(*v)
+	}
+	return _c
+}
+
 // SetDueDate sets the "due_date" field.
 func (_c *TodoCreate) SetDueDate(v time.Time) *TodoCreate {
 	_c.mutation.SetDueDate(v)
@@ -177,6 +191,10 @@ func (_c *TodoCreate) defaults() {
 		v := todo.DefaultCompleted
 		_c.mutation.SetCompleted(v)
 	}
+	if _, ok := _c.mutation.IsPublic(); !ok {
+		v := todo.DefaultIsPublic
+		_c.mutation.SetIsPublic(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := todo.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -215,6 +233,9 @@ func (_c *TodoCreate) check() error {
 	}
 	if _, ok := _c.mutation.Completed(); !ok {
 		return &ValidationError{Name: "completed", err: errors.New(`ent: missing required field "Todo.completed"`)}
+	}
+	if _, ok := _c.mutation.IsPublic(); !ok {
+		return &ValidationError{Name: "is_public", err: errors.New(`ent: missing required field "Todo.is_public"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Todo.created_at"`)}
@@ -280,6 +301,10 @@ func (_c *TodoCreate) createSpec() (*Todo, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Completed(); ok {
 		_spec.SetField(todo.FieldCompleted, field.TypeBool, value)
 		_node.Completed = value
+	}
+	if value, ok := _c.mutation.IsPublic(); ok {
+		_spec.SetField(todo.FieldIsPublic, field.TypeBool, value)
+		_node.IsPublic = value
 	}
 	if value, ok := _c.mutation.DueDate(); ok {
 		_spec.SetField(todo.FieldDueDate, field.TypeTime, value)

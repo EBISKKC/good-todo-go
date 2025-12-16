@@ -43,11 +43,11 @@ func init() {
 	tenanttodoviewFields := schema.TenantTodoView{}.Fields()
 	_ = tenanttodoviewFields
 	// tenanttodoviewDescCreatedAt is the schema descriptor for created_at field.
-	tenanttodoviewDescCreatedAt := tenanttodoviewFields[10].Descriptor()
+	tenanttodoviewDescCreatedAt := tenanttodoviewFields[11].Descriptor()
 	// tenanttodoview.DefaultCreatedAt holds the default value on creation for the created_at field.
 	tenanttodoview.DefaultCreatedAt = tenanttodoviewDescCreatedAt.Default.(func() time.Time)
 	// tenanttodoviewDescUpdatedAt is the schema descriptor for updated_at field.
-	tenanttodoviewDescUpdatedAt := tenanttodoviewFields[11].Descriptor()
+	tenanttodoviewDescUpdatedAt := tenanttodoviewFields[12].Descriptor()
 	// tenanttodoview.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	tenanttodoview.DefaultUpdatedAt = tenanttodoviewDescUpdatedAt.Default.(func() time.Time)
 	tenantuserviewFields := schema.TenantUserView{}.Fields()
@@ -82,12 +82,16 @@ func init() {
 	todoDescCompleted := todoFields[5].Descriptor()
 	// todo.DefaultCompleted holds the default value on creation for the completed field.
 	todo.DefaultCompleted = todoDescCompleted.Default.(bool)
+	// todoDescIsPublic is the schema descriptor for is_public field.
+	todoDescIsPublic := todoFields[6].Descriptor()
+	// todo.DefaultIsPublic holds the default value on creation for the is_public field.
+	todo.DefaultIsPublic = todoDescIsPublic.Default.(bool)
 	// todoDescCreatedAt is the schema descriptor for created_at field.
-	todoDescCreatedAt := todoFields[8].Descriptor()
+	todoDescCreatedAt := todoFields[9].Descriptor()
 	// todo.DefaultCreatedAt holds the default value on creation for the created_at field.
 	todo.DefaultCreatedAt = todoDescCreatedAt.Default.(func() time.Time)
 	// todoDescUpdatedAt is the schema descriptor for updated_at field.
-	todoDescUpdatedAt := todoFields[9].Descriptor()
+	todoDescUpdatedAt := todoFields[10].Descriptor()
 	// todo.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	todo.DefaultUpdatedAt = todoDescUpdatedAt.Default.(func() time.Time)
 	// todo.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

@@ -99,6 +99,11 @@ func Completed(v bool) predicate.TenantTodoView {
 	return predicate.TenantTodoView(sql.FieldEQ(FieldCompleted, v))
 }
 
+// IsPublic applies equality check predicate on the "is_public" field. It's identical to IsPublicEQ.
+func IsPublic(v bool) predicate.TenantTodoView {
+	return predicate.TenantTodoView(sql.FieldEQ(FieldIsPublic, v))
+}
+
 // DueDate applies equality check predicate on the "due_date" field. It's identical to DueDateEQ.
 func DueDate(v time.Time) predicate.TenantTodoView {
 	return predicate.TenantTodoView(sql.FieldEQ(FieldDueDate, v))
@@ -517,6 +522,16 @@ func CompletedEQ(v bool) predicate.TenantTodoView {
 // CompletedNEQ applies the NEQ predicate on the "completed" field.
 func CompletedNEQ(v bool) predicate.TenantTodoView {
 	return predicate.TenantTodoView(sql.FieldNEQ(FieldCompleted, v))
+}
+
+// IsPublicEQ applies the EQ predicate on the "is_public" field.
+func IsPublicEQ(v bool) predicate.TenantTodoView {
+	return predicate.TenantTodoView(sql.FieldEQ(FieldIsPublic, v))
+}
+
+// IsPublicNEQ applies the NEQ predicate on the "is_public" field.
+func IsPublicNEQ(v bool) predicate.TenantTodoView {
+	return predicate.TenantTodoView(sql.FieldNEQ(FieldIsPublic, v))
 }
 
 // DueDateEQ applies the EQ predicate on the "due_date" field.

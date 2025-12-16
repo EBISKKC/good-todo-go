@@ -35,6 +35,7 @@ func (TenantTodoView) Annotations() []schema.Annotation {
 					t.C("title"),
 					t.C("description"),
 					t.C("completed"),
+					t.C("is_public"),
 					t.C("due_date"),
 					t.C("completed_at"),
 					t.C("created_at"),
@@ -57,6 +58,7 @@ func (TenantTodoView) Fields() []ent.Field {
 		field.String("title"),
 		field.Text("description"),
 		field.Bool("completed"),
+		field.Bool("is_public"),
 		field.Time("due_date").
 			Optional().
 			Nillable(),

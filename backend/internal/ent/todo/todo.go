@@ -24,6 +24,8 @@ const (
 	FieldDescription = "description"
 	// FieldCompleted holds the string denoting the completed field in the database.
 	FieldCompleted = "completed"
+	// FieldIsPublic holds the string denoting the is_public field in the database.
+	FieldIsPublic = "is_public"
 	// FieldDueDate holds the string denoting the due_date field in the database.
 	FieldDueDate = "due_date"
 	// FieldCompletedAt holds the string denoting the completed_at field in the database.
@@ -53,6 +55,7 @@ var Columns = []string{
 	FieldTitle,
 	FieldDescription,
 	FieldCompleted,
+	FieldIsPublic,
 	FieldDueDate,
 	FieldCompletedAt,
 	FieldCreatedAt,
@@ -80,6 +83,8 @@ var (
 	DefaultDescription string
 	// DefaultCompleted holds the default value on creation for the "completed" field.
 	DefaultCompleted bool
+	// DefaultIsPublic holds the default value on creation for the "is_public" field.
+	DefaultIsPublic bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -121,6 +126,11 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // ByCompleted orders the results by the completed field.
 func ByCompleted(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCompleted, opts...).ToFunc()
+}
+
+// ByIsPublic orders the results by the is_public field.
+func ByIsPublic(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsPublic, opts...).ToFunc()
 }
 
 // ByDueDate orders the results by the due_date field.

@@ -126,6 +126,20 @@ func (_u *TenantTodoViewUpdate) SetNillableCompleted(v *bool) *TenantTodoViewUpd
 	return _u
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_u *TenantTodoViewUpdate) SetIsPublic(v bool) *TenantTodoViewUpdate {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *TenantTodoViewUpdate) SetNillableIsPublic(v *bool) *TenantTodoViewUpdate {
+	if v != nil {
+		_u.SetIsPublic(*v)
+	}
+	return _u
+}
+
 // SetDueDate sets the "due_date" field.
 func (_u *TenantTodoViewUpdate) SetDueDate(v time.Time) *TenantTodoViewUpdate {
 	_u.mutation.SetDueDate(v)
@@ -255,6 +269,9 @@ func (_u *TenantTodoViewUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.Completed(); ok {
 		_spec.SetField(tenanttodoview.FieldCompleted, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(tenanttodoview.FieldIsPublic, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.DueDate(); ok {
 		_spec.SetField(tenanttodoview.FieldDueDate, field.TypeTime, value)
@@ -388,6 +405,20 @@ func (_u *TenantTodoViewUpdateOne) SetCompleted(v bool) *TenantTodoViewUpdateOne
 func (_u *TenantTodoViewUpdateOne) SetNillableCompleted(v *bool) *TenantTodoViewUpdateOne {
 	if v != nil {
 		_u.SetCompleted(*v)
+	}
+	return _u
+}
+
+// SetIsPublic sets the "is_public" field.
+func (_u *TenantTodoViewUpdateOne) SetIsPublic(v bool) *TenantTodoViewUpdateOne {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *TenantTodoViewUpdateOne) SetNillableIsPublic(v *bool) *TenantTodoViewUpdateOne {
+	if v != nil {
+		_u.SetIsPublic(*v)
 	}
 	return _u
 }
@@ -551,6 +582,9 @@ func (_u *TenantTodoViewUpdateOne) sqlSave(ctx context.Context) (_node *TenantTo
 	}
 	if value, ok := _u.mutation.Completed(); ok {
 		_spec.SetField(tenanttodoview.FieldCompleted, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(tenanttodoview.FieldIsPublic, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.DueDate(); ok {
 		_spec.SetField(tenanttodoview.FieldDueDate, field.TypeTime, value)

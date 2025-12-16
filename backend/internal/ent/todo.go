@@ -28,6 +28,8 @@ type Todo struct {
 	Description string `json:"description,omitempty"`
 	// Completed holds the value of the "completed" field.
 	Completed bool `json:"completed,omitempty"`
+	// If true, visible to all users in the same tenant
+	IsPublic bool `json:"is_public,omitempty"`
 	// DueDate holds the value of the "due_date" field.
 	DueDate *time.Time `json:"due_date,omitempty"`
 	// CompletedAt holds the value of the "completed_at" field.
@@ -67,7 +69,7 @@ func (*Todo) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case todo.FieldCompleted:
+		case todo.FieldCompleted, todo.FieldIsPublic:
 			values[i] = new(sql.NullBool)
 		case todo.FieldID, todo.FieldTenantID, todo.FieldUserID, todo.FieldTitle, todo.FieldDescription:
 			values[i] = new(sql.NullString)
@@ -123,6 +125,12 @@ func (_m *Todo) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field completed", values[i])
 			} else if value.Valid {
 				_m.Completed = value.Bool
+			}
+		case todo.FieldIsPublic:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_public", values[i])
+			} else if value.Valid {
+				_m.IsPublic = value.Bool
 			}
 		case todo.FieldDueDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -205,6 +213,9 @@ func (_m *Todo) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("completed=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Completed))
+	builder.WriteString(", ")
+	builder.WriteString("is_public=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsPublic))
 	builder.WriteString(", ")
 	if v := _m.DueDate; v != nil {
 		builder.WriteString("due_date=")

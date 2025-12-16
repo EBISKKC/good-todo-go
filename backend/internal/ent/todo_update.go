@@ -76,6 +76,20 @@ func (_u *TodoUpdate) SetNillableCompleted(v *bool) *TodoUpdate {
 	return _u
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_u *TodoUpdate) SetIsPublic(v bool) *TodoUpdate {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *TodoUpdate) SetNillableIsPublic(v *bool) *TodoUpdate {
+	if v != nil {
+		_u.SetIsPublic(*v)
+	}
+	return _u
+}
+
 // SetDueDate sets the "due_date" field.
 func (_u *TodoUpdate) SetDueDate(v time.Time) *TodoUpdate {
 	_u.mutation.SetDueDate(v)
@@ -200,6 +214,9 @@ func (_u *TodoUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Completed(); ok {
 		_spec.SetField(todo.FieldCompleted, field.TypeBool, value)
 	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(todo.FieldIsPublic, field.TypeBool, value)
+	}
 	if value, ok := _u.mutation.DueDate(); ok {
 		_spec.SetField(todo.FieldDueDate, field.TypeTime, value)
 	}
@@ -279,6 +296,20 @@ func (_u *TodoUpdateOne) SetCompleted(v bool) *TodoUpdateOne {
 func (_u *TodoUpdateOne) SetNillableCompleted(v *bool) *TodoUpdateOne {
 	if v != nil {
 		_u.SetCompleted(*v)
+	}
+	return _u
+}
+
+// SetIsPublic sets the "is_public" field.
+func (_u *TodoUpdateOne) SetIsPublic(v bool) *TodoUpdateOne {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *TodoUpdateOne) SetNillableIsPublic(v *bool) *TodoUpdateOne {
+	if v != nil {
+		_u.SetIsPublic(*v)
 	}
 	return _u
 }
@@ -436,6 +467,9 @@ func (_u *TodoUpdateOne) sqlSave(ctx context.Context) (_node *Todo, err error) {
 	}
 	if value, ok := _u.mutation.Completed(); ok {
 		_spec.SetField(todo.FieldCompleted, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(todo.FieldIsPublic, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.DueDate(); ok {
 		_spec.SetField(todo.FieldDueDate, field.TypeTime, value)

@@ -62,6 +62,12 @@ func (_c *TenantTodoViewCreate) SetCompleted(v bool) *TenantTodoViewCreate {
 	return _c
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_c *TenantTodoViewCreate) SetIsPublic(v bool) *TenantTodoViewCreate {
+	_c.mutation.SetIsPublic(v)
+	return _c
+}
+
 // SetDueDate sets the "due_date" field.
 func (_c *TenantTodoViewCreate) SetDueDate(v time.Time) *TenantTodoViewCreate {
 	_c.mutation.SetDueDate(v)
@@ -192,6 +198,9 @@ func (_c *TenantTodoViewCreate) check() error {
 	if _, ok := _c.mutation.Completed(); !ok {
 		return &ValidationError{Name: "completed", err: errors.New(`ent: missing required field "TenantTodoView.completed"`)}
 	}
+	if _, ok := _c.mutation.IsPublic(); !ok {
+		return &ValidationError{Name: "is_public", err: errors.New(`ent: missing required field "TenantTodoView.is_public"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "TenantTodoView.created_at"`)}
 	}
@@ -260,6 +269,10 @@ func (_c *TenantTodoViewCreate) createSpec() (*TenantTodoView, *sqlgraph.CreateS
 	if value, ok := _c.mutation.Completed(); ok {
 		_spec.SetField(tenanttodoview.FieldCompleted, field.TypeBool, value)
 		_node.Completed = value
+	}
+	if value, ok := _c.mutation.IsPublic(); ok {
+		_spec.SetField(tenanttodoview.FieldIsPublic, field.TypeBool, value)
+		_node.IsPublic = value
 	}
 	if value, ok := _c.mutation.DueDate(); ok {
 		_spec.SetField(tenanttodoview.FieldDueDate, field.TypeTime, value)

@@ -635,6 +635,7 @@ type TenantTodoViewMutation struct {
 	title         *string
 	description   *string
 	completed     *bool
+	is_public     *bool
 	due_date      *time.Time
 	completed_at  *time.Time
 	created_at    *time.Time
@@ -1001,6 +1002,42 @@ func (m *TenantTodoViewMutation) ResetCompleted() {
 	m.completed = nil
 }
 
+// SetIsPublic sets the "is_public" field.
+func (m *TenantTodoViewMutation) SetIsPublic(b bool) {
+	m.is_public = &b
+}
+
+// IsPublic returns the value of the "is_public" field in the mutation.
+func (m *TenantTodoViewMutation) IsPublic() (r bool, exists bool) {
+	v := m.is_public
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsPublic returns the old "is_public" field's value of the TenantTodoView entity.
+// If the TenantTodoView object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TenantTodoViewMutation) OldIsPublic(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsPublic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsPublic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsPublic: %w", err)
+	}
+	return oldValue.IsPublic, nil
+}
+
+// ResetIsPublic resets all changes to the "is_public" field.
+func (m *TenantTodoViewMutation) ResetIsPublic() {
+	m.is_public = nil
+}
+
 // SetDueDate sets the "due_date" field.
 func (m *TenantTodoViewMutation) SetDueDate(t time.Time) {
 	m.due_date = &t
@@ -1205,7 +1242,7 @@ func (m *TenantTodoViewMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TenantTodoViewMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.tenant_id != nil {
 		fields = append(fields, tenanttodoview.FieldTenantID)
 	}
@@ -1226,6 +1263,9 @@ func (m *TenantTodoViewMutation) Fields() []string {
 	}
 	if m.completed != nil {
 		fields = append(fields, tenanttodoview.FieldCompleted)
+	}
+	if m.is_public != nil {
+		fields = append(fields, tenanttodoview.FieldIsPublic)
 	}
 	if m.due_date != nil {
 		fields = append(fields, tenanttodoview.FieldDueDate)
@@ -1261,6 +1301,8 @@ func (m *TenantTodoViewMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case tenanttodoview.FieldCompleted:
 		return m.Completed()
+	case tenanttodoview.FieldIsPublic:
+		return m.IsPublic()
 	case tenanttodoview.FieldDueDate:
 		return m.DueDate()
 	case tenanttodoview.FieldCompletedAt:
@@ -1292,6 +1334,8 @@ func (m *TenantTodoViewMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldDescription(ctx)
 	case tenanttodoview.FieldCompleted:
 		return m.OldCompleted(ctx)
+	case tenanttodoview.FieldIsPublic:
+		return m.OldIsPublic(ctx)
 	case tenanttodoview.FieldDueDate:
 		return m.OldDueDate(ctx)
 	case tenanttodoview.FieldCompletedAt:
@@ -1357,6 +1401,13 @@ func (m *TenantTodoViewMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCompleted(v)
+		return nil
+	case tenanttodoview.FieldIsPublic:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsPublic(v)
 		return nil
 	case tenanttodoview.FieldDueDate:
 		v, ok := value.(time.Time)
@@ -1470,6 +1521,9 @@ func (m *TenantTodoViewMutation) ResetField(name string) error {
 		return nil
 	case tenanttodoview.FieldCompleted:
 		m.ResetCompleted()
+		return nil
+	case tenanttodoview.FieldIsPublic:
+		m.ResetIsPublic()
 		return nil
 	case tenanttodoview.FieldDueDate:
 		m.ResetDueDate()
@@ -2309,6 +2363,7 @@ type TodoMutation struct {
 	title         *string
 	description   *string
 	completed     *bool
+	is_public     *bool
 	due_date      *time.Time
 	completed_at  *time.Time
 	created_at    *time.Time
@@ -2618,6 +2673,42 @@ func (m *TodoMutation) ResetCompleted() {
 	m.completed = nil
 }
 
+// SetIsPublic sets the "is_public" field.
+func (m *TodoMutation) SetIsPublic(b bool) {
+	m.is_public = &b
+}
+
+// IsPublic returns the value of the "is_public" field in the mutation.
+func (m *TodoMutation) IsPublic() (r bool, exists bool) {
+	v := m.is_public
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsPublic returns the old "is_public" field's value of the Todo entity.
+// If the Todo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TodoMutation) OldIsPublic(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsPublic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsPublic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsPublic: %w", err)
+	}
+	return oldValue.IsPublic, nil
+}
+
+// ResetIsPublic resets all changes to the "is_public" field.
+func (m *TodoMutation) ResetIsPublic() {
+	m.is_public = nil
+}
+
 // SetDueDate sets the "due_date" field.
 func (m *TodoMutation) SetDueDate(t time.Time) {
 	m.due_date = &t
@@ -2849,7 +2940,7 @@ func (m *TodoMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TodoMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.tenant_id != nil {
 		fields = append(fields, todo.FieldTenantID)
 	}
@@ -2864,6 +2955,9 @@ func (m *TodoMutation) Fields() []string {
 	}
 	if m.completed != nil {
 		fields = append(fields, todo.FieldCompleted)
+	}
+	if m.is_public != nil {
+		fields = append(fields, todo.FieldIsPublic)
 	}
 	if m.due_date != nil {
 		fields = append(fields, todo.FieldDueDate)
@@ -2895,6 +2989,8 @@ func (m *TodoMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case todo.FieldCompleted:
 		return m.Completed()
+	case todo.FieldIsPublic:
+		return m.IsPublic()
 	case todo.FieldDueDate:
 		return m.DueDate()
 	case todo.FieldCompletedAt:
@@ -2922,6 +3018,8 @@ func (m *TodoMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDescription(ctx)
 	case todo.FieldCompleted:
 		return m.OldCompleted(ctx)
+	case todo.FieldIsPublic:
+		return m.OldIsPublic(ctx)
 	case todo.FieldDueDate:
 		return m.OldDueDate(ctx)
 	case todo.FieldCompletedAt:
@@ -2973,6 +3071,13 @@ func (m *TodoMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCompleted(v)
+		return nil
+	case todo.FieldIsPublic:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsPublic(v)
 		return nil
 	case todo.FieldDueDate:
 		v, ok := value.(time.Time)
@@ -3086,6 +3191,9 @@ func (m *TodoMutation) ResetField(name string) error {
 		return nil
 	case todo.FieldCompleted:
 		m.ResetCompleted()
+		return nil
+	case todo.FieldIsPublic:
+		m.ResetIsPublic()
 		return nil
 	case todo.FieldDueDate:
 		m.ResetDueDate()
