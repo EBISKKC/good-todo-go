@@ -18,6 +18,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (accessToken: string, refreshToken: string, tenantSlug: string) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,6 +71,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  const refreshUser = useCallback(async () => {
+    const { getMe } = await import('@/api/public/user/user');
+    try {
+      const response = await getMe();
+      const tenantSlug = localStorage.getItem('tenantSlug') || '';
+      if (response) {
+        setUser({
+          id: response.id ?? '',
+          email: response.email ?? '',
+          name: response.name ?? '',
+          role: response.role ?? '',
+          tenantId: response.tenant_id ?? '',
+          tenantSlug: tenantSlug,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -78,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         login,
         logout,
+        refreshUser,
       }}
     >
       {children}

@@ -1,18 +1,20 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Building2 } from 'lucide-react';
+import { LogOut, User, Building2, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useGetTodos, useGetPublicTodos } from '@/api/public/todo/todo';
 import { TodoList } from '@/components/todo/todo-list';
 import { CreateTodoDialog } from '@/components/todo/create-todo-dialog';
+import { ProfileEditDialog } from '@/components/user/profile-edit-dialog';
 
 export default function TodosPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   const { data: myTodosData, isLoading: myTodosLoading } = useGetTodos(
     undefined,
@@ -62,15 +64,23 @@ export default function TodosPage() {
                 <Building2 className="h-3.5 w-3.5" />
                 <span>{user?.tenantSlug}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-600">
+              <button
+                onClick={() => setProfileDialogOpen(true)}
+                className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors"
+              >
                 <User className="h-4 w-4" />
                 <span>{user?.name}</span>
-              </div>
+                <Settings className="h-3.5 w-3.5 text-gray-400" />
+              </button>
             </div>
             <Button variant="ghost" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               ログアウト
             </Button>
+            <ProfileEditDialog
+              open={profileDialogOpen}
+              onOpenChange={setProfileDialogOpen}
+            />
           </div>
         </div>
       </header>
