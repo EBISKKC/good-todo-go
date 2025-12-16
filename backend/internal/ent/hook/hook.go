@@ -20,6 +20,18 @@ func (f TenantFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TenantMutation", m)
 }
 
+// The TenantTodoViewFunc type is an adapter to allow the use of ordinary
+// function as TenantTodoView mutator.
+type TenantTodoViewFunc func(context.Context, *ent.TenantTodoViewMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TenantTodoViewFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TenantTodoViewMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TenantTodoViewMutation", m)
+}
+
 // The TodoFunc type is an adapter to allow the use of ordinary
 // function as Todo mutator.
 type TodoFunc func(context.Context, *ent.TodoMutation) (ent.Value, error)

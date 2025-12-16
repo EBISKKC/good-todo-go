@@ -5,6 +5,7 @@ package ent
 import (
 	"good-todo-go/internal/ent/schema"
 	"good-todo-go/internal/ent/tenant"
+	"good-todo-go/internal/ent/tenanttodoview"
 	"good-todo-go/internal/ent/todo"
 	"good-todo-go/internal/ent/user"
 	"time"
@@ -38,6 +39,16 @@ func init() {
 	tenantDescID := tenantFields[0].Descriptor()
 	// tenant.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	tenant.IDValidator = tenantDescID.Validators[0].(func(string) error)
+	tenanttodoviewFields := schema.TenantTodoView{}.Fields()
+	_ = tenanttodoviewFields
+	// tenanttodoviewDescCreatedAt is the schema descriptor for created_at field.
+	tenanttodoviewDescCreatedAt := tenanttodoviewFields[10].Descriptor()
+	// tenanttodoview.DefaultCreatedAt holds the default value on creation for the created_at field.
+	tenanttodoview.DefaultCreatedAt = tenanttodoviewDescCreatedAt.Default.(func() time.Time)
+	// tenanttodoviewDescUpdatedAt is the schema descriptor for updated_at field.
+	tenanttodoviewDescUpdatedAt := tenanttodoviewFields[11].Descriptor()
+	// tenanttodoview.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	tenanttodoview.DefaultUpdatedAt = tenanttodoviewDescUpdatedAt.Default.(func() time.Time)
 	todoFields := schema.Todo{}.Fields()
 	_ = todoFields
 	// todoDescTenantID is the schema descriptor for tenant_id field.
