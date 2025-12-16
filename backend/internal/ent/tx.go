@@ -16,10 +16,6 @@ type Tx struct {
 	config
 	// Tenant is the client for interacting with the Tenant builders.
 	Tenant *TenantClient
-	// TenantTodoView is the client for interacting with the TenantTodoView builders.
-	TenantTodoView *TenantTodoViewClient
-	// TenantUserView is the client for interacting with the TenantUserView builders.
-	TenantUserView *TenantUserViewClient
 	// Todo is the client for interacting with the Todo builders.
 	Todo *TodoClient
 	// User is the client for interacting with the User builders.
@@ -156,8 +152,6 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Tenant = NewTenantClient(tx.config)
-	tx.TenantTodoView = NewTenantTodoViewClient(tx.config)
-	tx.TenantUserView = NewTenantUserViewClient(tx.config)
 	tx.Todo = NewTodoClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

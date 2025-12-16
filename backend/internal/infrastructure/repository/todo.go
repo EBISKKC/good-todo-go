@@ -6,7 +6,7 @@ import (
 	"good-todo-go/internal/domain/model"
 	"good-todo-go/internal/domain/repository"
 	"good-todo-go/internal/ent"
-	"good-todo-go/internal/ent/tenanttodoview"
+	"good-todo-go/internal/ent/todo"
 	"good-todo-go/internal/infrastructure/database"
 )
 
@@ -18,7 +18,7 @@ func NewTodoRepository(client *ent.Client) repository.ITodoRepository {
 	return &TodoRepository{client: client}
 }
 
-// FindByID reads a single todo via TenantTodoView (tenant-scoped from context)
+// FindByID reads a single todo (RLS handles tenant isolation)
 func (r *TodoRepository) FindByID(ctx context.Context, todoID string) (*model.Todo, error) {
 	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
@@ -26,9 +26,7 @@ func (r *TodoRepository) FindByID(ctx context.Context, todoID string) (*model.To
 	}
 	defer tx.Rollback()
 
-	t, err := tx.TenantTodoView.Query().
-		Where(tenanttodoview.IDEQ(todoID)).
-		Only(ctx)
+	t, err := tx.Todo.Get(ctx, todoID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,10 +34,10 @@ func (r *TodoRepository) FindByID(ctx context.Context, todoID string) (*model.To
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
-	return toTodoModelFromView(t), nil
+	return toTodoModel(t), nil
 }
 
-// FindByUserID reads todos via TenantTodoView (tenant-scoped from context)
+// FindByUserID reads todos (RLS handles tenant isolation)
 func (r *TodoRepository) FindByUserID(ctx context.Context, userID string, limit, offset int) ([]*model.Todo, error) {
 	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
@@ -47,9 +45,9 @@ func (r *TodoRepository) FindByUserID(ctx context.Context, userID string, limit,
 	}
 	defer tx.Rollback()
 
-	todos, err := tx.TenantTodoView.Query().
-		Where(tenanttodoview.UserIDEQ(userID)).
-		Order(ent.Desc(tenanttodoview.FieldCreatedAt)).
+	todos, err := tx.Todo.Query().
+		Where(todo.UserIDEQ(userID)).
+		Order(ent.Desc(todo.FieldCreatedAt)).
 		Limit(limit).
 		Offset(offset).
 		All(ctx)
@@ -63,12 +61,12 @@ func (r *TodoRepository) FindByUserID(ctx context.Context, userID string, limit,
 
 	result := make([]*model.Todo, len(todos))
 	for i, t := range todos {
-		result[i] = toTodoModelFromView(t)
+		result[i] = toTodoModel(t)
 	}
 	return result, nil
 }
 
-// CountByUserID counts todos via TenantTodoView (tenant-scoped from context)
+// CountByUserID counts todos (RLS handles tenant isolation)
 func (r *TodoRepository) CountByUserID(ctx context.Context, userID string) (int, error) {
 	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
@@ -76,8 +74,8 @@ func (r *TodoRepository) CountByUserID(ctx context.Context, userID string) (int,
 	}
 	defer tx.Rollback()
 
-	count, err := tx.TenantTodoView.Query().
-		Where(tenanttodoview.UserIDEQ(userID)).
+	count, err := tx.Todo.Query().
+		Where(todo.UserIDEQ(userID)).
 		Count(ctx)
 	if err != nil {
 		return 0, err
@@ -89,7 +87,7 @@ func (r *TodoRepository) CountByUserID(ctx context.Context, userID string) (int,
 	return count, nil
 }
 
-// FindPublic reads public todos from the same tenant (tenant-scoped from context)
+// FindPublic reads public todos from the same tenant (RLS handles tenant isolation)
 func (r *TodoRepository) FindPublic(ctx context.Context, limit, offset int) ([]*model.Todo, error) {
 	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
@@ -97,9 +95,9 @@ func (r *TodoRepository) FindPublic(ctx context.Context, limit, offset int) ([]*
 	}
 	defer tx.Rollback()
 
-	todos, err := tx.TenantTodoView.Query().
-		Where(tenanttodoview.IsPublicEQ(true)).
-		Order(ent.Desc(tenanttodoview.FieldCreatedAt)).
+	todos, err := tx.Todo.Query().
+		Where(todo.IsPublicEQ(true)).
+		Order(ent.Desc(todo.FieldCreatedAt)).
 		Limit(limit).
 		Offset(offset).
 		All(ctx)
@@ -113,12 +111,12 @@ func (r *TodoRepository) FindPublic(ctx context.Context, limit, offset int) ([]*
 
 	result := make([]*model.Todo, len(todos))
 	for i, t := range todos {
-		result[i] = toTodoModelFromView(t)
+		result[i] = toTodoModel(t)
 	}
 	return result, nil
 }
 
-// CountPublic counts public todos in the same tenant (tenant-scoped from context)
+// CountPublic counts public todos in the same tenant (RLS handles tenant isolation)
 func (r *TodoRepository) CountPublic(ctx context.Context) (int, error) {
 	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
@@ -126,8 +124,8 @@ func (r *TodoRepository) CountPublic(ctx context.Context) (int, error) {
 	}
 	defer tx.Rollback()
 
-	count, err := tx.TenantTodoView.Query().
-		Where(tenanttodoview.IsPublicEQ(true)).
+	count, err := tx.Todo.Query().
+		Where(todo.IsPublicEQ(true)).
 		Count(ctx)
 	if err != nil {
 		return 0, err
@@ -221,22 +219,6 @@ func (r *TodoRepository) Delete(ctx context.Context, todoID string) error {
 
 // toTodoModel converts ent.Todo to model.Todo
 func toTodoModel(t *ent.Todo) *model.Todo {
-	return &model.Todo{
-		ID:          t.ID,
-		UserID:      t.UserID,
-		TenantID:    t.TenantID,
-		Title:       t.Title,
-		Description: t.Description,
-		Completed:   t.Completed,
-		IsPublic:    t.IsPublic,
-		DueDate:     t.DueDate,
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
-	}
-}
-
-// toTodoModelFromView converts ent.TenantTodoView to model.Todo
-func toTodoModelFromView(t *ent.TenantTodoView) *model.Todo {
 	return &model.Todo{
 		ID:          t.ID,
 		UserID:      t.UserID,

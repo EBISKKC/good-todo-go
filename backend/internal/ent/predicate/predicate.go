@@ -9,12 +9,6 @@ import (
 // Tenant is the predicate function for tenant builders.
 type Tenant func(*sql.Selector)
 
-// TenantTodoView is the predicate function for tenanttodoview builders.
-type TenantTodoView func(*sql.Selector)
-
-// TenantUserView is the predicate function for tenantuserview builders.
-type TenantUserView func(*sql.Selector)
-
 // Todo is the predicate function for todo builders.
 type Todo func(*sql.Selector)
 
