@@ -114,6 +114,7 @@ export default function TodosPage() {
               <TodoList
                 todos={publicTodos}
                 myTodoIds={myTodoIds}
+                showCreator={true}
                 emptyMessage="チームで公開されているTodoはまだありません。"
               />
             )}

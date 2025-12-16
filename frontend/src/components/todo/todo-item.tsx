@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Trash2, Globe, Lock, Pencil, Eye, User } from 'lucide-react';
+import { Trash2, Globe, Lock, Pencil, Eye, Calendar, User } from 'lucide-react';
 import { TodoResponse } from '@/api/public/model/components-schemas-todo';
 import { useUpdateTodo, useDeleteTodo, getGetTodosQueryKey, getGetPublicTodosQueryKey } from '@/api/public/todo/todo';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,9 +16,10 @@ import { ViewTodoDialog } from './view-todo-dialog';
 interface TodoItemProps {
   todo: TodoResponse;
   isOwner?: boolean;
+  showCreator?: boolean;
 }
 
-export function TodoItem({ todo, isOwner = false }: TodoItemProps) {
+export function TodoItem({ todo, isOwner = false, showCreator = false }: TodoItemProps) {
   const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -79,108 +79,150 @@ export function TodoItem({ todo, isOwner = false }: TodoItemProps) {
   };
 
   return (
-    <Card className={`${todo.completed ? 'opacity-60' : ''}`}>
-      <CardContent className="flex items-center gap-4 p-4">
-        {isOwner ? (
-          <Checkbox
-            checked={todo.completed ?? false}
-            onCheckedChange={handleToggleComplete}
-            disabled={updateTodo.isPending}
-          />
-        ) : (
-          <div className="w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
-            {todo.completed && <div className="w-2 h-2 bg-gray-400 rounded-sm" />}
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className={`font-medium truncate ${todo.completed ? 'line-through text-gray-500' : ''}`}>
-              {todo.title}
-            </h3>
-            <span title={todo.is_public ? '公開' : '非公開'}>
-              {todo.is_public ? (
-                <Globe className="h-4 w-4 text-blue-500 shrink-0" />
-              ) : (
-                <Lock className="h-4 w-4 text-gray-400 shrink-0" />
-              )}
-            </span>
-          </div>
-          {todo.description && (
-            <p className="text-sm text-gray-500 truncate">{todo.description}</p>
-          )}
-          <div className="flex items-center gap-3 mt-1">
-            {todo.due_date && (
-              <p className="text-xs text-gray-400">
-                期限: {format(new Date(todo.due_date), 'yyyy年M月d日', { locale: ja })}
-              </p>
-            )}
-            {!isOwner && todo.created_by && (
-              <p className="text-xs text-gray-400 flex items-center gap-1">
-                <User className="h-3 w-3" />
-                {todo.created_by.name}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {isOwner ? (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsEditDialogOpen(true)}
-              title="編集"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleTogglePublic}
+    <>
+      <tr className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${todo.completed ? 'opacity-50' : ''}`}>
+        {/* チェックボックス */}
+        <td className="py-3 px-4 w-12">
+          {isOwner ? (
+            <Checkbox
+              checked={todo.completed ?? false}
+              onCheckedChange={handleToggleComplete}
               disabled={updateTodo.isPending}
-              title={todo.is_public ? '非公開にする' : '公開する'}
-            >
-              {todo.is_public ? (
-                <Lock className="h-4 w-4" />
-              ) : (
-                <Globe className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="text-red-500 hover:text-red-700"
-              title="削除"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            />
+          ) : (
+            <div className="w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
+              {todo.completed && <div className="w-2 h-2 bg-gray-400 rounded-sm" />}
+            </div>
+          )}
+        </td>
+
+        {/* タイトル・説明 */}
+        <td className="py-3 px-4">
+          <div className="min-w-0">
+            <p className={`font-medium text-gray-900 truncate ${todo.completed ? 'line-through text-gray-500' : ''}`}>
+              {todo.title}
+            </p>
+            {todo.description && (
+              <p className="text-sm text-gray-500 truncate mt-0.5">{todo.description}</p>
+            )}
           </div>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsViewDialogOpen(true)}
-            title="詳細を見る"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
+        </td>
+
+        {/* 作成者（チーム公開タブのみ） */}
+        {showCreator && (
+          <td className="py-3 px-4 w-32">
+            {todo.created_by ? (
+              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                <User className="h-3.5 w-3.5 text-gray-400" />
+                <span className="truncate">{todo.created_by.name}</span>
+              </div>
+            ) : (
+              <span className="text-sm text-gray-400">-</span>
+            )}
+          </td>
         )}
 
-        <EditTodoDialog
-          todo={todo}
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-        />
+        {/* 期限 */}
+        <td className="py-3 px-4 w-36">
+          {todo.due_date ? (
+            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+              <Calendar className="h-3.5 w-3.5 text-gray-400" />
+              <span>{format(new Date(todo.due_date), 'M/d (E)', { locale: ja })}</span>
+            </div>
+          ) : (
+            <span className="text-sm text-gray-400">-</span>
+          )}
+        </td>
 
-        <ViewTodoDialog
-          todo={todo}
-          open={isViewDialogOpen}
-          onOpenChange={setIsViewDialogOpen}
-        />
-      </CardContent>
-    </Card>
+        {/* 公開状態 */}
+        <td className="py-3 px-4 w-20 text-center">
+          <span
+            className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+              todo.is_public
+                ? 'bg-blue-50 text-blue-600'
+                : 'bg-gray-100 text-gray-500'
+            }`}
+            title={todo.is_public ? '公開' : '非公開'}
+          >
+            {todo.is_public ? (
+              <>
+                <Globe className="h-3 w-3" />
+                公開
+              </>
+            ) : (
+              <>
+                <Lock className="h-3 w-3" />
+                非公開
+              </>
+            )}
+          </span>
+        </td>
+
+        {/* アクション */}
+        <td className="py-3 px-4 w-32">
+          <div className="flex items-center justify-end gap-1">
+            {isOwner ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsEditDialogOpen(true)}
+                  title="編集"
+                >
+                  <Pencil className="h-4 w-4 text-gray-500" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleTogglePublic}
+                  disabled={updateTodo.isPending}
+                  title={todo.is_public ? '非公開にする' : '公開する'}
+                >
+                  {todo.is_public ? (
+                    <Lock className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <Globe className="h-4 w-4 text-gray-500" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  title="削除"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setIsViewDialogOpen(true)}
+                title="詳細を見る"
+              >
+                <Eye className="h-4 w-4 text-gray-500" />
+              </Button>
+            )}
+          </div>
+        </td>
+      </tr>
+
+      <EditTodoDialog
+        todo={todo}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+      />
+
+      <ViewTodoDialog
+        todo={todo}
+        open={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+      />
+    </>
   );
 }
