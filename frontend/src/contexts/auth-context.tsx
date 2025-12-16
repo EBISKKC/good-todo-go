@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface User {
   id: string;
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const parseToken = useCallback((token: string, tenantSlug: string): User | null => {
     try {
@@ -91,8 +93,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('tenantSlug');
     setUser(null);
+    queryClient.clear(); // 全てのキャッシュをクリアしてテナント間のデータ漏洩を防止
     router.push('/login');
-  }, [router]);
+  }, [router, queryClient]);
 
   const refreshUser = useCallback(async () => {
     const { getMe } = await import('@/api/public/user/user');
