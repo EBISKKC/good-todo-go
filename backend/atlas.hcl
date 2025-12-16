@@ -56,6 +56,8 @@ env "local" {
 env "prod" {
   url = "postgres://${var.db_user}:${var.db_password}@${var.db_host}:${var.db_port}/${var.db_name}?sslmode=require"
 
+  dev = "docker://postgres/17/dev?search_path=public"
+
   migration {
     dir = "file://internal/ent/migrate/migrations"
   }

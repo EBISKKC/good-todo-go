@@ -19,12 +19,13 @@ type TenantTodoView struct {
 // Annotations of the TenantTodoView.
 func (TenantTodoView) Annotations() []schema.Annotation {
 	return []schema.Annotation{
-		// Define the view using SQL builder
+		// Define the view using SQL builder with tenant isolation
 		entsql.ViewFor("postgres", func(s *sql.Selector) {
 			t := sql.Table("todos").As("t")
 			u := sql.Table("users").As("u")
 			s.From(t).
 				Join(u).On(t.C("user_id"), u.C("id")).
+				Where(sql.ExprP("t.tenant_id = current_setting('app.current_tenant_id', true)")).
 				Select(
 					t.C("id"),
 					t.C("tenant_id"),
@@ -40,7 +41,7 @@ func (TenantTodoView) Annotations() []schema.Annotation {
 					t.C("updated_at"),
 				)
 		}),
-		// Skip migration for view (view is created manually or via ViewFor)
+		// Skip migration for view (view is created via migration file)
 		entsql.Skip(),
 	}
 }
