@@ -92,7 +92,10 @@ func WithTenantScope(ctx context.Context, client *ent.Client, tenantID string) (
 	}
 
 	// Set tenant context within transaction using SET LOCAL
-	if _, err := tx.ExecContext(ctx, "SET LOCAL app.current_tenant_id = $1", tenantID); err != nil {
+	// Note: SET command doesn't support placeholders, so we use fmt.Sprintf
+	// tenantID should be a valid UUID from JWT, validated at auth layer
+	query := fmt.Sprintf("SET LOCAL app.current_tenant_id = '%s'", tenantID)
+	if _, err := tx.ExecContext(ctx, query); err != nil {
 		_ = tx.Rollback()
 		return nil, fmt.Errorf("failed to set tenant context: %w", err)
 	}
