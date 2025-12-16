@@ -1,0 +1,82 @@
+services:
+  # メインデータベース（PostgreSQL）
+  db:
+    image: postgres:17
+    container_name: goodtodo-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - PGPORT=${POSTGRES_DB_PORT}
+    ports:
+      - "${POSTGRES_DB_PORT}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_DB_USER} -d ${POSTGRES_DB_NAME} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Atlas用開発データベース（マイグレーション差分比較用）
+  atlas-dev-db:
+    image: postgres:17
+    container_name: goodtodo-atlas-dev-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=atlas
+      - POSTGRES_PASSWORD=atlas
+      - POSTGRES_DB=dev
+      - PGPORT=5433
+    ports:
+      - "5433:5432"
+    volumes:
+      - atlas_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d dev -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Public APIサーバー
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api.local
+    container_name: goodtodo-api
+    tty: true
+    environment:
+      PORT: 8000
+      POSTGRES_DB_HOST: db
+      POSTGRES_DB_PORT: ${POSTGRES_DB_PORT}
+      POSTGRES_DB_USER: ${POSTGRES_DB_USER}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_PASSWORD}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      GO_ENV: development
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # MailHog（ローカル開発用メールサーバー）
+  mailhog:
+    image: mailhog/mailhog
+    container_name: goodtodo-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+
+volumes:
+  db_data:
+  atlas_dev_data:
