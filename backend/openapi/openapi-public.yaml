@@ -21,7 +21,7 @@ paths:
     $ref: "./paths/public/me.yaml#/me"
   /todos:
     $ref: "./paths/public/todo.yaml#/todos"
-  /todos/public:
+  /todos-public:
     $ref: "./paths/public/todo.yaml#/todos-public"
   /todos/{todoId}:
     $ref: "./paths/public/todo.yaml#/todo-by-id"

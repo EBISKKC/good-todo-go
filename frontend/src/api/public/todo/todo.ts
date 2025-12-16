@@ -210,7 +210,7 @@ export const getPublicTodos = (
       
       
       return customInstance<TodoListResponse>(
-      {url: `/todos/public`, method: 'GET',
+      {url: `/todos-public`, method: 'GET',
         params, signal
     },
       );
@@ -221,7 +221,7 @@ export const getPublicTodos = (
 
 export const getGetPublicTodosQueryKey = (params?: GetPublicTodosParams,) => {
     return [
-    `/todos/public`, ...(params ? [params]: [])
+    `/todos-public`, ...(params ? [params]: [])
     ] as const;
     }
 
