@@ -30,29 +30,37 @@ export function TodoList({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <table className="w-full">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden overflow-x-auto">
+      <table className="w-full table-fixed min-w-[600px]">
+        <colgroup>
+          <col className="w-14" />
+          <col />
+          {showCreator && <col className="w-28" />}
+          <col className="w-28" />
+          <col className="w-24" />
+          <col className="w-28" />
+        </colgroup>
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
-            <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+            <th className="py-3 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               完了
             </th>
-            <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="py-3 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               タイトル
             </th>
             {showCreator && (
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+              <th className="py-3 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 作成者
               </th>
             )}
-            <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
+            <th className="py-3 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               期限
             </th>
-            <th className="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+            <th className="py-3 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               公開
             </th>
-            <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-              アクション
+            <th className="py-3 px-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              操作
             </th>
           </tr>
         </thead>
