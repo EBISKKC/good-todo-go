@@ -141,7 +141,13 @@ func (r *TodoRepository) CountPublic(ctx context.Context) (int, error) {
 
 // Create writes directly to todos table (RLS protected)
 func (r *TodoRepository) Create(ctx context.Context, t *model.Todo) (*model.Todo, error) {
-	builder := r.dbClient.Ent.Todo.Create().
+	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	builder := tx.Todo.Create().
 		SetID(t.ID).
 		SetTenantID(t.TenantID).
 		SetUserID(t.UserID).
@@ -158,12 +164,23 @@ func (r *TodoRepository) Create(ctx context.Context, t *model.Todo) (*model.Todo
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
 	return toTodoModel(created), nil
 }
 
 // Update writes directly to todos table (RLS protected)
 func (r *TodoRepository) Update(ctx context.Context, t *model.Todo) (*model.Todo, error) {
-	builder := r.dbClient.Ent.Todo.UpdateOneID(t.ID).
+	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	builder := tx.Todo.UpdateOneID(t.ID).
 		SetTitle(t.Title).
 		SetDescription(t.Description).
 		SetCompleted(t.Completed).
@@ -179,12 +196,27 @@ func (r *TodoRepository) Update(ctx context.Context, t *model.Todo) (*model.Todo
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
 	return toTodoModel(updated), nil
 }
 
 // Delete writes directly to todos table (RLS protected)
 func (r *TodoRepository) Delete(ctx context.Context, todoID string) error {
-	return r.dbClient.Ent.Todo.DeleteOneID(todoID).Exec(ctx)
+	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := tx.Todo.DeleteOneID(todoID).Exec(ctx); err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 // toTodoModel converts ent.Todo to model.Todo

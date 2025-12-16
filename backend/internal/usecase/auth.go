@@ -179,7 +179,7 @@ func (i *AuthInteractor) RefreshToken(ctx context.Context, in *input.RefreshToke
 	}
 
 	// Find user to ensure they still exist
-	user, err := i.authRepo.FindUserByID(ctx, claims.UserID)
+	user, err := i.authRepo.FindUserByID(ctx, claims.TenantID, claims.UserID)
 	if err != nil {
 		return nil, cerror.NewUnauthorized("user not found", nil)
 	}

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"good-todo-go/internal/domain/model"
 	"good-todo-go/internal/domain/repository"
@@ -41,7 +42,19 @@ func (r *AuthRepository) CreateTenant(ctx context.Context, t *model.Tenant) (*mo
 }
 
 func (r *AuthRepository) FindUserByEmail(ctx context.Context, tenantID, email string) (*model.User, error) {
-	u, err := r.client.User.Query().
+	// Start transaction with tenant context for RLS
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Set tenant context for RLS
+	if _, err := tx.ExecContext(ctx, fmt.Sprintf("SET LOCAL app.current_tenant_id = '%s'", tenantID)); err != nil {
+		return nil, fmt.Errorf("failed to set tenant context: %w", err)
+	}
+
+	u, err := tx.User.Query().
 		Where(
 			user.TenantIDEQ(tenantID),
 			user.EmailEQ(email),
@@ -50,14 +63,36 @@ func (r *AuthRepository) FindUserByEmail(ctx context.Context, tenantID, email st
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return toUserModel(u), nil
 }
 
-func (r *AuthRepository) FindUserByID(ctx context.Context, userID string) (*model.User, error) {
-	u, err := r.client.User.Get(ctx, userID)
+func (r *AuthRepository) FindUserByID(ctx context.Context, tenantID, userID string) (*model.User, error) {
+	// Start transaction with tenant context for RLS
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Set tenant context for RLS
+	if _, err := tx.ExecContext(ctx, fmt.Sprintf("SET LOCAL app.current_tenant_id = '%s'", tenantID)); err != nil {
+		return nil, fmt.Errorf("failed to set tenant context: %w", err)
+	}
+
+	u, err := tx.User.Get(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return toUserModel(u), nil
 }
 
@@ -72,7 +107,19 @@ func (r *AuthRepository) FindUserByVerificationToken(ctx context.Context, token 
 }
 
 func (r *AuthRepository) CreateUser(ctx context.Context, u *model.User) (*model.User, error) {
-	builder := r.client.User.Create().
+	// Start transaction with tenant context for RLS
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Set tenant context for RLS
+	if _, err := tx.ExecContext(ctx, fmt.Sprintf("SET LOCAL app.current_tenant_id = '%s'", u.TenantID)); err != nil {
+		return nil, fmt.Errorf("failed to set tenant context: %w", err)
+	}
+
+	builder := tx.User.Create().
 		SetID(u.ID).
 		SetTenantID(u.TenantID).
 		SetEmail(u.Email).
@@ -92,11 +139,28 @@ func (r *AuthRepository) CreateUser(ctx context.Context, u *model.User) (*model.
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return toUserModel(created), nil
 }
 
 func (r *AuthRepository) UpdateUser(ctx context.Context, u *model.User) (*model.User, error) {
-	builder := r.client.User.UpdateOneID(u.ID).
+	// Start transaction with tenant context for RLS
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Set tenant context for RLS
+	if _, err := tx.ExecContext(ctx, fmt.Sprintf("SET LOCAL app.current_tenant_id = '%s'", u.TenantID)); err != nil {
+		return nil, fmt.Errorf("failed to set tenant context: %w", err)
+	}
+
+	builder := tx.User.UpdateOneID(u.ID).
 		SetName(u.Name).
 		SetEmailVerified(u.EmailVerified)
 
@@ -116,6 +180,11 @@ func (r *AuthRepository) UpdateUser(ctx context.Context, u *model.User) (*model.
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return toUserModel(updated), nil
 }
 
