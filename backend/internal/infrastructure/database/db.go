@@ -12,22 +12,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// DBClient holds both ent.Client and sql.DB for flexibility
-type DBClient struct {
-	Ent *ent.Client
-	DB  *sql.DB
-}
-
+// NewEntClient creates an ent.Client for database operations
+// Note: All database access should use TenantScopedTx for RLS enforcement
 func NewEntClient(cfg *environment.Config) (*ent.Client, error) {
-	dbClient, err := NewDBClient(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return dbClient.Ent, nil
-}
-
-// NewDBClient creates both ent.Client and sql.DB from the same connection pool
-func NewDBClient(cfg *environment.Config) (*DBClient, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DBHost,
@@ -37,13 +24,13 @@ func NewDBClient(cfg *environment.Config) (*DBClient, error) {
 		cfg.DBName,
 	)
 
-	// Open sql.DB first
+	// Open sql.DB
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed opening connection to postgres: %w", err)
 	}
 
-	// Create ent client from the same sql.DB
+	// Create ent client from sql.DB
 	drv := entsql.OpenDB("postgres", db)
 	client := ent.NewClient(ent.Driver(drv))
 
@@ -52,10 +39,7 @@ func NewDBClient(cfg *environment.Config) (*DBClient, error) {
 		client = client.Debug()
 	}
 
-	return &DBClient{
-		Ent: client,
-		DB:  db,
-	}, nil
+	return client, nil
 }
 
 func CloseEntClient(client *ent.Client) error {
