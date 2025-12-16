@@ -1,0 +1,40 @@
+UserResponse:
+  type: object
+  properties:
+    id:
+      type: string
+    email:
+      type: string
+    name:
+      type: string
+    role:
+      type: string
+      enum:
+        - admin
+        - member
+    email_verified:
+      type: boolean
+    tenant_id:
+      type: string
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+
+UpdateUserRequest:
+  type: object
+  properties:
+    name:
+      type: string
+
+UserListResponse:
+  type: object
+  properties:
+    users:
+      type: array
+      items:
+        $ref: "#/UserResponse"
+    total:
+      type: integer

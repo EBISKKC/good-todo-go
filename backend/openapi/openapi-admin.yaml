@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  version: 0.0.1
+  title: Good Todo API - Admin
+  description: Admin API for Good Todo application (Tenant management)
+servers:
+  - url: http://localhost:8001
+    description: Local development server
+paths:
+  /health:
+    $ref: "./paths/admin/health.yaml#/health"
+  /tenants:
+    $ref: "./paths/admin/tenant.yaml#/tenants"
+  /tenants/{tenantId}:
+    $ref: "./paths/admin/tenant.yaml#/tenant-by-id"
+  /tenants/{tenantId}/users:
+    $ref: "./paths/admin/tenant.yaml#/tenant-users"
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

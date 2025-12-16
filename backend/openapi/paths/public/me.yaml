@@ -1,0 +1,47 @@
+me:
+  get:
+    summary: Get current user info
+    operationId: getMe
+    tags:
+      - User
+    security:
+      - Bearer: []
+    responses:
+      "200":
+        description: Current user information
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/user.yaml#/UserResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+  put:
+    summary: Update current user info
+    operationId: updateMe
+    tags:
+      - User
+    security:
+      - Bearer: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/user.yaml#/UpdateUserRequest"
+    responses:
+      "200":
+        description: User updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/user.yaml#/UserResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"

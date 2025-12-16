@@ -1,0 +1,7 @@
+package: api
+generate:
+  echo-server: true
+  models: true
+  client: true
+  embedded-spec: true
+output: ./internal/presentation/admin/api/api.go

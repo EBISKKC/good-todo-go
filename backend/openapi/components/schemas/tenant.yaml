@@ -1,0 +1,43 @@
+TenantResponse:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    slug:
+      type: string
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+
+TenantListResponse:
+  type: object
+  properties:
+    tenants:
+      type: array
+      items:
+        $ref: "#/TenantResponse"
+    total:
+      type: integer
+
+CreateTenantRequest:
+  type: object
+  required:
+    - name
+    - slug
+  properties:
+    name:
+      type: string
+    slug:
+      type: string
+      pattern: "^[a-z0-9-]+$"
+
+UpdateTenantRequest:
+  type: object
+  properties:
+    name:
+      type: string

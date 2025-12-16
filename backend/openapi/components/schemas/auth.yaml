@@ -1,0 +1,65 @@
+RegisterRequest:
+  type: object
+  required:
+    - email
+    - password
+    - tenant_slug
+  properties:
+    email:
+      type: string
+      format: email
+    password:
+      type: string
+      minLength: 8
+    name:
+      type: string
+    tenant_slug:
+      type: string
+      description: Tenant identifier (slug)
+
+LoginRequest:
+  type: object
+  required:
+    - email
+    - password
+    - tenant_slug
+  properties:
+    email:
+      type: string
+      format: email
+    password:
+      type: string
+    tenant_slug:
+      type: string
+
+VerifyEmailRequest:
+  type: object
+  required:
+    - token
+  properties:
+    token:
+      type: string
+
+RefreshTokenRequest:
+  type: object
+  required:
+    - refresh_token
+  properties:
+    refresh_token:
+      type: string
+
+AuthResponse:
+  type: object
+  properties:
+    access_token:
+      type: string
+    refresh_token:
+      type: string
+    token_type:
+      type: string
+      example: "Bearer"
+    expires_in:
+      type: integer
+      description: Access token expiration time in seconds
+    user:
+      $ref: "./user.yaml#/UserResponse"

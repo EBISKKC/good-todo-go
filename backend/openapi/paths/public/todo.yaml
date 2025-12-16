@@ -1,0 +1,181 @@
+todos:
+  get:
+    summary: Get all todos for current user
+    operationId: getTodos
+    tags:
+      - Todo
+    security:
+      - Bearer: []
+    parameters:
+      - name: completed
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Filter by completion status
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+    responses:
+      "200":
+        description: List of todos
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/todo.yaml#/TodoListResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+  post:
+    summary: Create a new todo
+    operationId: createTodo
+    tags:
+      - Todo
+    security:
+      - Bearer: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/todo.yaml#/CreateTodoRequest"
+    responses:
+      "201":
+        description: Todo created successfully
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/todo.yaml#/TodoResponse"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+
+todo-by-id:
+  get:
+    summary: Get a todo by ID
+    operationId: getTodo
+    tags:
+      - Todo
+    security:
+      - Bearer: []
+    parameters:
+      - name: todoId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Todo details
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/todo.yaml#/TodoResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+      "404":
+        description: Todo not found
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+  put:
+    summary: Update a todo
+    operationId: updateTodo
+    tags:
+      - Todo
+    security:
+      - Bearer: []
+    parameters:
+      - name: todoId
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/todo.yaml#/UpdateTodoRequest"
+    responses:
+      "200":
+        description: Todo updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/todo.yaml#/TodoResponse"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+      "404":
+        description: Todo not found
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+  delete:
+    summary: Delete a todo
+    operationId: deleteTodo
+    tags:
+      - Todo
+    security:
+      - Bearer: []
+    parameters:
+      - name: todoId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "204":
+        description: Todo deleted successfully
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+      "404":
+        description: Todo not found
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"

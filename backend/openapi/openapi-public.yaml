@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  version: 0.0.1
+  title: Good Todo API - Public
+  description: Public API for Good Todo application
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+paths:
+  /health:
+    $ref: "./paths/public/health.yaml#/health"
+  /auth/register:
+    $ref: "./paths/public/auth.yaml#/auth-register"
+  /auth/login:
+    $ref: "./paths/public/auth.yaml#/auth-login"
+  /auth/verify-email:
+    $ref: "./paths/public/auth.yaml#/auth-verify-email"
+  /auth/refresh:
+    $ref: "./paths/public/auth.yaml#/auth-refresh"
+  /me:
+    $ref: "./paths/public/me.yaml#/me"
+  /todos:
+    $ref: "./paths/public/todo.yaml#/todos"
+  /todos/{todoId}:
+    $ref: "./paths/public/todo.yaml#/todo-by-id"
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

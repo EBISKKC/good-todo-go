@@ -1,0 +1,166 @@
+tenants:
+  get:
+    summary: Get all tenants
+    operationId: getTenants
+    tags:
+      - Tenant
+    security:
+      - Bearer: []
+    parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+    responses:
+      "200":
+        description: List of tenants
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/tenant.yaml#/TenantListResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+  post:
+    summary: Create a new tenant
+    operationId: createTenant
+    tags:
+      - Tenant
+    security:
+      - Bearer: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/tenant.yaml#/CreateTenantRequest"
+    responses:
+      "201":
+        description: Tenant created successfully
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/tenant.yaml#/TenantResponse"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+      "409":
+        description: Tenant slug already exists
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+
+tenant-by-id:
+  get:
+    summary: Get a tenant by ID
+    operationId: getTenant
+    tags:
+      - Tenant
+    security:
+      - Bearer: []
+    parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Tenant details
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/tenant.yaml#/TenantResponse"
+      "404":
+        description: Tenant not found
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+  put:
+    summary: Update a tenant
+    operationId: updateTenant
+    tags:
+      - Tenant
+    security:
+      - Bearer: []
+    parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/tenant.yaml#/UpdateTenantRequest"
+    responses:
+      "200":
+        description: Tenant updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/tenant.yaml#/TenantResponse"
+      "404":
+        description: Tenant not found
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+
+tenant-users:
+  get:
+    summary: Get users in a tenant
+    operationId: getTenantUsers
+    tags:
+      - Tenant
+    security:
+      - Bearer: []
+    parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+    responses:
+      "200":
+        description: List of users in tenant
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/user.yaml#/UserListResponse"
+      "404":
+        description: Tenant not found
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"

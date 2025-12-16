@@ -1,0 +1,13 @@
+extends:
+  - recommended
+
+apis:
+  public:
+    root: ./openapi/openapi-public.yaml
+  admin:
+    root: ./openapi/openapi-admin.yaml
+
+rules:
+  no-unused-components: warn
+  operation-operationId: error
+  tag-description: off
