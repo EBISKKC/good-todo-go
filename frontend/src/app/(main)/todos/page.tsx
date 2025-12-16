@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useGetTodos, useGetPublicTodos } from '@/api/public/todo/todo';
 import { TodoList } from '@/components/todo/todo-list';
@@ -23,6 +23,12 @@ export default function TodosPage() {
     undefined,
     { query: { enabled: isAuthenticated } }
   );
+
+  // マイTodoのIDセットを作成（チーム公開Todoで自分のTodoを編集可能にするため）
+  const myTodoIds = useMemo(() => {
+    const todos = myTodosData?.todos ?? [];
+    return new Set(todos.map((todo) => todo.id).filter((id): id is string => id !== undefined));
+  }, [myTodosData?.todos]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -51,9 +57,15 @@ export default function TodosPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold">Good Todo</h1>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <User className="h-4 w-4" />
-              <span>{user?.name}</span>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-1.5 text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                <Building2 className="h-3.5 w-3.5" />
+                <span>{user?.tenantSlug}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-600">
+                <User className="h-4 w-4" />
+                <span>{user?.name}</span>
+              </div>
             </div>
             <Button variant="ghost" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
@@ -87,7 +99,7 @@ export default function TodosPage() {
             ) : (
               <TodoList
                 todos={myTodos}
-                currentUserId={user?.id}
+                allEditable={true}
                 emptyMessage="Todoがありません。最初のTodoを作成しましょう！"
               />
             )}
@@ -101,7 +113,7 @@ export default function TodosPage() {
             ) : (
               <TodoList
                 todos={publicTodos}
-                currentUserId={user?.id}
+                myTodoIds={myTodoIds}
                 emptyMessage="チームで公開されているTodoはまだありません。"
               />
             )}
