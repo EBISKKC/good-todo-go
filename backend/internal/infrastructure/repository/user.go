@@ -7,6 +7,7 @@ import (
 	"good-todo-go/internal/domain/repository"
 	"good-todo-go/internal/ent"
 	"good-todo-go/internal/ent/user"
+	"good-todo-go/internal/infrastructure/database"
 )
 
 type UserRepository struct {
@@ -18,10 +19,21 @@ func NewUserRepository(client *ent.Client) repository.IUserRepository {
 }
 
 func (r *UserRepository) FindByID(ctx context.Context, userID string) (*model.User, error) {
-	u, err := r.client.User.Get(ctx, userID)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return nil, err
 	}
+	defer tx.Rollback()
+
+	u, err := tx.User.Get(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
 	return toUserModel(u), nil
 }
 
@@ -29,12 +41,24 @@ func (r *UserRepository) FindByIDs(ctx context.Context, userIDs []string) ([]*mo
 	if len(userIDs) == 0 {
 		return []*model.User{}, nil
 	}
-	users, err := r.client.User.Query().
+
+	tx, err := database.TenantScopedTx(ctx, r.client)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	users, err := tx.User.Query().
 		Where(user.IDIn(userIDs...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
 	result := make([]*model.User, len(users))
 	for i, u := range users {
 		result[i] = toUserModel(u)
@@ -42,12 +66,23 @@ func (r *UserRepository) FindByIDs(ctx context.Context, userIDs []string) ([]*mo
 	return result, nil
 }
 
-func (r *UserRepository) Update(ctx context.Context, user *model.User) (*model.User, error) {
-	updated, err := r.client.User.UpdateOneID(user.ID).
-		SetName(user.Name).
+func (r *UserRepository) Update(ctx context.Context, u *model.User) (*model.User, error) {
+	tx, err := database.TenantScopedTx(ctx, r.client)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	updated, err := tx.User.UpdateOneID(u.ID).
+		SetName(u.Name).
 		Save(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
 	return toUserModel(updated), nil
 }

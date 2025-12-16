@@ -11,16 +11,16 @@ import (
 )
 
 type TodoRepository struct {
-	dbClient *database.DBClient
+	client *ent.Client
 }
 
-func NewTodoRepository(dbClient *database.DBClient) repository.ITodoRepository {
-	return &TodoRepository{dbClient: dbClient}
+func NewTodoRepository(client *ent.Client) repository.ITodoRepository {
+	return &TodoRepository{client: client}
 }
 
 // FindByID reads a single todo via TenantTodoView (tenant-scoped from context)
 func (r *TodoRepository) FindByID(ctx context.Context, todoID string) (*model.Todo, error) {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (r *TodoRepository) FindByID(ctx context.Context, todoID string) (*model.To
 
 // FindByUserID reads todos via TenantTodoView (tenant-scoped from context)
 func (r *TodoRepository) FindByUserID(ctx context.Context, userID string, limit, offset int) ([]*model.Todo, error) {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (r *TodoRepository) FindByUserID(ctx context.Context, userID string, limit,
 
 // CountByUserID counts todos via TenantTodoView (tenant-scoped from context)
 func (r *TodoRepository) CountByUserID(ctx context.Context, userID string) (int, error) {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return 0, err
 	}
@@ -91,7 +91,7 @@ func (r *TodoRepository) CountByUserID(ctx context.Context, userID string) (int,
 
 // FindPublic reads public todos from the same tenant (tenant-scoped from context)
 func (r *TodoRepository) FindPublic(ctx context.Context, limit, offset int) ([]*model.Todo, error) {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (r *TodoRepository) FindPublic(ctx context.Context, limit, offset int) ([]*
 
 // CountPublic counts public todos in the same tenant (tenant-scoped from context)
 func (r *TodoRepository) CountPublic(ctx context.Context) (int, error) {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return 0, err
 	}
@@ -141,7 +141,7 @@ func (r *TodoRepository) CountPublic(ctx context.Context) (int, error) {
 
 // Create writes directly to todos table (RLS protected)
 func (r *TodoRepository) Create(ctx context.Context, t *model.Todo) (*model.Todo, error) {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +174,7 @@ func (r *TodoRepository) Create(ctx context.Context, t *model.Todo) (*model.Todo
 
 // Update writes directly to todos table (RLS protected)
 func (r *TodoRepository) Update(ctx context.Context, t *model.Todo) (*model.Todo, error) {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +206,7 @@ func (r *TodoRepository) Update(ctx context.Context, t *model.Todo) (*model.Todo
 
 // Delete writes directly to todos table (RLS protected)
 func (r *TodoRepository) Delete(ctx context.Context, todoID string) error {
-	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	tx, err := database.TenantScopedTx(ctx, r.client)
 	if err != nil {
 		return err
 	}
