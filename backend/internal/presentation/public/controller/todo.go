@@ -57,6 +57,29 @@ func (c *TodoController) GetTodos(ctx echo.Context, params api.GetTodosParams) e
 	return c.todoPresenter.GetTodos(ctx, out)
 }
 
+func (c *TodoController) GetPublicTodos(ctx echo.Context, params api.GetPublicTodosParams) error {
+	limit := 20
+	offset := 0
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+	if params.Offset != nil {
+		offset = *params.Offset
+	}
+
+	in := &input.GetPublicTodosInput{
+		Limit:  limit,
+		Offset: offset,
+	}
+
+	out, err := c.todoUsecase.GetPublicTodos(ctx.Request().Context(), in)
+	if err != nil {
+		return handleError(err)
+	}
+
+	return c.todoPresenter.GetTodos(ctx, out)
+}
+
 func (c *TodoController) GetTodo(ctx echo.Context, todoID string) error {
 	userID, ok := ctx.Get(context_keys.UserIDContextKey).(string)
 	if !ok || userID == "" {
@@ -96,6 +119,11 @@ func (c *TodoController) CreateTodo(ctx echo.Context) error {
 		description = *req.Description
 	}
 
+	isPublic := false
+	if req.IsPublic != nil {
+		isPublic = *req.IsPublic
+	}
+
 	var dueDate *time.Time
 	if req.DueDate != nil {
 		dueDate = req.DueDate
@@ -106,6 +134,7 @@ func (c *TodoController) CreateTodo(ctx echo.Context) error {
 		TenantID:    tenantID,
 		Title:       req.Title,
 		Description: description,
+		IsPublic:    isPublic,
 		DueDate:     dueDate,
 	}
 
@@ -134,6 +163,7 @@ func (c *TodoController) UpdateTodo(ctx echo.Context, todoID string) error {
 		Title:       req.Title,
 		Description: req.Description,
 		Completed:   req.Completed,
+		IsPublic:    req.IsPublic,
 		DueDate:     req.DueDate,
 	}
 

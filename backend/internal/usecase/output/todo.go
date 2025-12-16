@@ -9,6 +9,7 @@ type TodoOutput struct {
 	Title       string
 	Description string
 	Completed   bool
+	IsPublic    bool
 	DueDate     *string
 	CreatedAt   string
 	UpdatedAt   string
@@ -31,6 +32,7 @@ func NewTodoOutput(todo *model.Todo) *TodoOutput {
 		Title:       todo.Title,
 		Description: todo.Description,
 		Completed:   todo.Completed,
+		IsPublic:    todo.IsPublic,
 		DueDate:     dueDate,
 		CreatedAt:   todo.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt:   todo.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),

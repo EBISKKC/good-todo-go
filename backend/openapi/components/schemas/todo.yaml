@@ -9,6 +9,9 @@ TodoResponse:
       type: string
     completed:
       type: boolean
+    is_public:
+      type: boolean
+      description: If true, visible to all users in the same tenant
     due_date:
       type: string
       format: date-time
@@ -44,6 +47,10 @@ CreateTodoRequest:
       minLength: 1
     description:
       type: string
+    is_public:
+      type: boolean
+      default: false
+      description: If true, visible to all users in the same tenant
     due_date:
       type: string
       format: date-time
@@ -58,6 +65,9 @@ UpdateTodoRequest:
       type: string
     completed:
       type: boolean
+    is_public:
+      type: boolean
+      description: If true, visible to all users in the same tenant
     due_date:
       type: string
       format: date-time

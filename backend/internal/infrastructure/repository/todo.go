@@ -89,6 +89,56 @@ func (r *TodoRepository) CountByUserID(ctx context.Context, userID string) (int,
 	return count, nil
 }
 
+// FindPublic reads public todos from the same tenant (tenant-scoped from context)
+func (r *TodoRepository) FindPublic(ctx context.Context, limit, offset int) ([]*model.Todo, error) {
+	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	todos, err := tx.TenantTodoView.Query().
+		Where(tenanttodoview.IsPublicEQ(true)).
+		Order(ent.Desc(tenanttodoview.FieldCreatedAt)).
+		Limit(limit).
+		Offset(offset).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	result := make([]*model.Todo, len(todos))
+	for i, t := range todos {
+		result[i] = toTodoModelFromView(t)
+	}
+	return result, nil
+}
+
+// CountPublic counts public todos in the same tenant (tenant-scoped from context)
+func (r *TodoRepository) CountPublic(ctx context.Context) (int, error) {
+	tx, err := database.TenantScopedTx(ctx, r.dbClient.Ent)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	count, err := tx.TenantTodoView.Query().
+		Where(tenanttodoview.IsPublicEQ(true)).
+		Count(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // Create writes directly to todos table (RLS protected)
 func (r *TodoRepository) Create(ctx context.Context, t *model.Todo) (*model.Todo, error) {
 	builder := r.dbClient.Ent.Todo.Create().
@@ -97,7 +147,8 @@ func (r *TodoRepository) Create(ctx context.Context, t *model.Todo) (*model.Todo
 		SetUserID(t.UserID).
 		SetTitle(t.Title).
 		SetDescription(t.Description).
-		SetCompleted(t.Completed)
+		SetCompleted(t.Completed).
+		SetIsPublic(t.IsPublic)
 
 	if t.DueDate != nil {
 		builder.SetDueDate(*t.DueDate)
@@ -115,7 +166,8 @@ func (r *TodoRepository) Update(ctx context.Context, t *model.Todo) (*model.Todo
 	builder := r.dbClient.Ent.Todo.UpdateOneID(t.ID).
 		SetTitle(t.Title).
 		SetDescription(t.Description).
-		SetCompleted(t.Completed)
+		SetCompleted(t.Completed).
+		SetIsPublic(t.IsPublic)
 
 	if t.DueDate != nil {
 		builder.SetDueDate(*t.DueDate)
@@ -144,6 +196,7 @@ func toTodoModel(t *ent.Todo) *model.Todo {
 		Title:       t.Title,
 		Description: t.Description,
 		Completed:   t.Completed,
+		IsPublic:    t.IsPublic,
 		DueDate:     t.DueDate,
 		CreatedAt:   t.CreatedAt,
 		UpdatedAt:   t.UpdatedAt,
@@ -159,6 +212,7 @@ func toTodoModelFromView(t *ent.TenantTodoView) *model.Todo {
 		Title:       t.Title,
 		Description: t.Description,
 		Completed:   t.Completed,
+		IsPublic:    t.IsPublic,
 		DueDate:     t.DueDate,
 		CreatedAt:   t.CreatedAt,
 		UpdatedAt:   t.UpdatedAt,

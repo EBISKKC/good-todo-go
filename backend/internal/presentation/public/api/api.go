@@ -48,7 +48,10 @@ type AuthResponse struct {
 type CreateTodoRequest struct {
 	Description *string    `json:"description,omitempty"`
 	DueDate     *time.Time `json:"due_date,omitempty"`
-	Title       string     `json:"title"`
+
+	// IsPublic If true, visible to all users in the same tenant
+	IsPublic *bool  `json:"is_public,omitempty"`
+	Title    string `json:"title"`
 }
 
 // ErrorResponse defines model for ErrorResponse.
@@ -94,8 +97,11 @@ type TodoResponse struct {
 	Description *string    `json:"description,omitempty"`
 	DueDate     *time.Time `json:"due_date"`
 	Id          *string    `json:"id,omitempty"`
-	Title       *string    `json:"title,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+
+	// IsPublic If true, visible to all users in the same tenant
+	IsPublic  *bool      `json:"is_public,omitempty"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 // UpdateTodoRequest defines model for UpdateTodoRequest.
@@ -103,7 +109,10 @@ type UpdateTodoRequest struct {
 	Completed   *bool      `json:"completed,omitempty"`
 	Description *string    `json:"description,omitempty"`
 	DueDate     *time.Time `json:"due_date"`
-	Title       *string    `json:"title,omitempty"`
+
+	// IsPublic If true, visible to all users in the same tenant
+	IsPublic *bool   `json:"is_public,omitempty"`
+	Title    *string `json:"title,omitempty"`
 }
 
 // UpdateUserRequest defines model for UpdateUserRequest.
@@ -137,6 +146,12 @@ type GetTodosParams struct {
 	Completed *bool `form:"completed,omitempty" json:"completed,omitempty"`
 	Limit     *int  `form:"limit,omitempty" json:"limit,omitempty"`
 	Offset    *int  `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// GetPublicTodosParams defines parameters for GetPublicTodos.
+type GetPublicTodosParams struct {
+	Limit  *int `form:"limit,omitempty" json:"limit,omitempty"`
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
@@ -271,6 +286,9 @@ type ClientInterface interface {
 	CreateTodoWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateTodo(ctx context.Context, body CreateTodoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetPublicTodos request
+	GetPublicTodos(ctx context.Context, params *GetPublicTodosParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteTodo request
 	DeleteTodo(ctx context.Context, todoId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -454,6 +472,18 @@ func (c *Client) CreateTodoWithBody(ctx context.Context, contentType string, bod
 
 func (c *Client) CreateTodo(ctx context.Context, body CreateTodoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTodoRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPublicTodos(ctx context.Context, params *GetPublicTodosParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPublicTodosRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -887,6 +917,71 @@ func NewCreateTodoRequestWithBody(server string, contentType string, body io.Rea
 	return req, nil
 }
 
+// NewGetPublicTodosRequest generates requests for GetPublicTodos
+func NewGetPublicTodosRequest(server string, params *GetPublicTodosParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/todos/public")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewDeleteTodoRequest generates requests for DeleteTodo
 func NewDeleteTodoRequest(server string, todoId string) (*http.Request, error) {
 	var err error
@@ -1083,6 +1178,9 @@ type ClientWithResponsesInterface interface {
 	CreateTodoWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTodoResponse, error)
 
 	CreateTodoWithResponse(ctx context.Context, body CreateTodoJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTodoResponse, error)
+
+	// GetPublicTodosWithResponse request
+	GetPublicTodosWithResponse(ctx context.Context, params *GetPublicTodosParams, reqEditors ...RequestEditorFn) (*GetPublicTodosResponse, error)
 
 	// DeleteTodoWithResponse request
 	DeleteTodoWithResponse(ctx context.Context, todoId string, reqEditors ...RequestEditorFn) (*DeleteTodoResponse, error)
@@ -1308,6 +1406,29 @@ func (r CreateTodoResponse) StatusCode() int {
 	return 0
 }
 
+type GetPublicTodosResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TodoListResponse
+	JSON401      *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPublicTodosResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPublicTodosResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteTodoResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1507,6 +1628,15 @@ func (c *ClientWithResponses) CreateTodoWithResponse(ctx context.Context, body C
 		return nil, err
 	}
 	return ParseCreateTodoResponse(rsp)
+}
+
+// GetPublicTodosWithResponse request returning *GetPublicTodosResponse
+func (c *ClientWithResponses) GetPublicTodosWithResponse(ctx context.Context, params *GetPublicTodosParams, reqEditors ...RequestEditorFn) (*GetPublicTodosResponse, error) {
+	rsp, err := c.GetPublicTodos(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPublicTodosResponse(rsp)
 }
 
 // DeleteTodoWithResponse request returning *DeleteTodoResponse
@@ -1852,6 +1982,39 @@ func ParseCreateTodoResponse(rsp *http.Response) (*CreateTodoResponse, error) {
 	return response, nil
 }
 
+// ParseGetPublicTodosResponse parses an HTTP response from a GetPublicTodosWithResponse call
+func ParseGetPublicTodosResponse(rsp *http.Response) (*GetPublicTodosResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPublicTodosResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TodoListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeleteTodoResponse parses an HTTP response from a DeleteTodoWithResponse call
 func ParseDeleteTodoResponse(rsp *http.Response) (*DeleteTodoResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -2001,6 +2164,9 @@ type ServerInterface interface {
 	// Create a new todo
 	// (POST /todos)
 	CreateTodo(ctx echo.Context) error
+	// Get public todos in the same tenant
+	// (GET /todos/public)
+	GetPublicTodos(ctx echo.Context, params GetPublicTodosParams) error
 	// Delete a todo
 	// (DELETE /todos/{todoId})
 	DeleteTodo(ctx echo.Context, todoId string) error
@@ -2129,6 +2295,33 @@ func (w *ServerInterfaceWrapper) CreateTodo(ctx echo.Context) error {
 	return err
 }
 
+// GetPublicTodos converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPublicTodos(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPublicTodosParams
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetPublicTodos(ctx, params)
+	return err
+}
+
 // DeleteTodo converts echo context to params.
 func (w *ServerInterfaceWrapper) DeleteTodo(ctx echo.Context) error {
 	var err error
@@ -2220,6 +2413,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/me", wrapper.UpdateMe)
 	router.GET(baseURL+"/todos", wrapper.GetTodos)
 	router.POST(baseURL+"/todos", wrapper.CreateTodo)
+	router.GET(baseURL+"/todos/public", wrapper.GetPublicTodos)
 	router.DELETE(baseURL+"/todos/:todoId", wrapper.DeleteTodo)
 	router.GET(baseURL+"/todos/:todoId", wrapper.GetTodo)
 	router.PUT(baseURL+"/todos/:todoId", wrapper.UpdateTodo)
@@ -2229,33 +2423,34 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"XiUAAA==",
+	"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",
+	"EvjeQhmbPhmPx3Q1Wf0TAAD//+EdDg/4KAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

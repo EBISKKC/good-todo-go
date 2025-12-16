@@ -13,6 +13,7 @@ import (
 
 type ITodoInteractor interface {
 	GetTodos(ctx context.Context, in *input.GetTodosInput) (*output.TodoListOutput, error)
+	GetPublicTodos(ctx context.Context, in *input.GetPublicTodosInput) (*output.TodoListOutput, error)
 	GetTodo(ctx context.Context, todoID, userID string) (*output.TodoOutput, error)
 	CreateTodo(ctx context.Context, in *input.CreateTodoInput) (*output.TodoOutput, error)
 	UpdateTodo(ctx context.Context, in *input.UpdateTodoInput) (*output.TodoOutput, error)
@@ -56,14 +57,36 @@ func (i *TodoInteractor) GetTodos(ctx context.Context, in *input.GetTodosInput) 
 	return output.NewTodoListOutput(todos, total), nil
 }
 
+func (i *TodoInteractor) GetPublicTodos(ctx context.Context, in *input.GetPublicTodosInput) (*output.TodoListOutput, error) {
+	limit := in.Limit
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	todos, err := i.todoRepo.FindPublic(ctx, limit, in.Offset)
+	if err != nil {
+		return nil, cerror.NewInternalServerError("failed to get public todos", err)
+	}
+
+	total, err := i.todoRepo.CountPublic(ctx)
+	if err != nil {
+		return nil, cerror.NewInternalServerError("failed to count public todos", err)
+	}
+
+	return output.NewTodoListOutput(todos, total), nil
+}
+
 func (i *TodoInteractor) GetTodo(ctx context.Context, todoID, userID string) (*output.TodoOutput, error) {
 	todo, err := i.todoRepo.FindByID(ctx, todoID)
 	if err != nil {
 		return nil, cerror.NewNotFound("todo not found", err)
 	}
 
-	// Verify ownership
-	if todo.UserID != userID {
+	// Allow access if user owns the todo OR if it's public
+	if todo.UserID != userID && !todo.IsPublic {
 		return nil, cerror.NewForbidden("not allowed to access this todo", nil)
 	}
 
@@ -78,6 +101,7 @@ func (i *TodoInteractor) CreateTodo(ctx context.Context, in *input.CreateTodoInp
 		Title:       in.Title,
 		Description: in.Description,
 		Completed:   false,
+		IsPublic:    in.IsPublic,
 		DueDate:     in.DueDate,
 	}
 
@@ -95,7 +119,7 @@ func (i *TodoInteractor) UpdateTodo(ctx context.Context, in *input.UpdateTodoInp
 		return nil, cerror.NewNotFound("todo not found", err)
 	}
 
-	// Verify ownership
+	// Only owner can update
 	if todo.UserID != in.UserID {
 		return nil, cerror.NewForbidden("not allowed to update this todo", nil)
 	}
@@ -108,6 +132,9 @@ func (i *TodoInteractor) UpdateTodo(ctx context.Context, in *input.UpdateTodoInp
 	}
 	if in.Completed != nil {
 		todo.Completed = *in.Completed
+	}
+	if in.IsPublic != nil {
+		todo.IsPublic = *in.IsPublic
 	}
 	if in.DueDate != nil {
 		todo.DueDate = in.DueDate
@@ -127,7 +154,7 @@ func (i *TodoInteractor) DeleteTodo(ctx context.Context, todoID, userID string) 
 		return cerror.NewNotFound("todo not found", err)
 	}
 
-	// Verify ownership
+	// Only owner can delete
 	if todo.UserID != userID {
 		return cerror.NewForbidden("not allowed to delete this todo", nil)
 	}

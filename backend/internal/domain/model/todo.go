@@ -9,6 +9,7 @@ type Todo struct {
 	Title       string
 	Description string
 	Completed   bool
+	IsPublic    bool
 	DueDate     *time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time

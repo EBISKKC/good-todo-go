@@ -74,6 +74,44 @@ todos:
             schema:
               $ref: "../../components/schemas/error.yaml#/ErrorResponse"
 
+todos-public:
+  get:
+    summary: Get public todos in the same tenant
+    operationId: getPublicTodos
+    tags:
+      - Todo
+    security:
+      - Bearer: []
+    parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+    responses:
+      "200":
+        description: List of public todos
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/todo.yaml#/TodoListResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../../components/schemas/error.yaml#/ErrorResponse"
+
 todo-by-id:
   get:
     summary: Get a todo by ID

@@ -7,6 +7,7 @@ type CreateTodoInput struct {
 	TenantID    string
 	Title       string
 	Description string
+	IsPublic    bool
 	DueDate     *time.Time
 }
 
@@ -16,11 +17,17 @@ type UpdateTodoInput struct {
 	Title       *string
 	Description *string
 	Completed   *bool
+	IsPublic    *bool
 	DueDate     *time.Time
 }
 
 type GetTodosInput struct {
 	UserID string
+	Limit  int
+	Offset int
+}
+
+type GetPublicTodosInput struct {
 	Limit  int
 	Offset int
 }
