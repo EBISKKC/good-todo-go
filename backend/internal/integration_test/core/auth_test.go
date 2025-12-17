@@ -18,8 +18,8 @@ import (
 func TestAuth_Register(t *testing.T) {
 	t.Parallel()
 
-	client := common.SetupTestClient(t)
-	deps := BuildTestDependencies(client)
+	_, appClient := common.SetupTestClientWithRLS(t)
+	deps := BuildTestDependencies(appClient)
 
 	tests := []struct {
 		name           string
@@ -123,8 +123,8 @@ func TestAuth_Register(t *testing.T) {
 func TestAuth_Register_DuplicateEmail(t *testing.T) {
 	t.Parallel()
 
-	client := common.SetupTestClient(t)
-	deps := BuildTestDependencies(client)
+	_, appClient := common.SetupTestClientWithRLS(t)
+	deps := BuildTestDependencies(appClient)
 	e := SetupEcho()
 
 	// First registration
@@ -160,8 +160,8 @@ func TestAuth_Register_DuplicateEmail(t *testing.T) {
 func TestAuth_Login(t *testing.T) {
 	t.Parallel()
 
-	client := common.SetupTestClient(t)
-	deps := BuildTestDependencies(client)
+	_, appClient := common.SetupTestClientWithRLS(t)
+	deps := BuildTestDependencies(appClient)
 
 	// First, register a user
 	e := SetupEcho()
@@ -283,8 +283,8 @@ func TestAuth_Login(t *testing.T) {
 func TestAuth_RefreshToken(t *testing.T) {
 	t.Parallel()
 
-	client := common.SetupTestClient(t)
-	deps := BuildTestDependencies(client)
+	_, appClient := common.SetupTestClientWithRLS(t)
+	deps := BuildTestDependencies(appClient)
 
 	// First, register a user and get tokens
 	e := SetupEcho()
@@ -379,8 +379,8 @@ func TestAuth_RefreshToken(t *testing.T) {
 func TestAuth_VerifyEmail(t *testing.T) {
 	t.Parallel()
 
-	client := common.SetupTestClient(t)
-	deps := BuildTestDependencies(client)
+	adminClient, appClient := common.SetupTestClientWithRLS(t)
+	deps := BuildTestDependencies(appClient)
 
 	// Register a user to get a verification token
 	e := SetupEcho()
@@ -402,8 +402,8 @@ func TestAuth_VerifyEmail(t *testing.T) {
 	var registerResponse api.AuthResponse
 	_ = json.Unmarshal(rec.Body.Bytes(), &registerResponse)
 
-	// Query the user to get verification token
-	user, _ := client.User.Get(req.Context(), *registerResponse.User.Id)
+	// Query the user to get verification token (use adminClient to bypass RLS)
+	user, _ := adminClient.User.Get(req.Context(), *registerResponse.User.Id)
 	verificationToken := ""
 	if user != nil && user.VerificationToken != nil {
 		verificationToken = *user.VerificationToken

@@ -18,9 +18,9 @@ import (
 func TestUser_GetMe(t *testing.T) {
 	t.Parallel()
 
-	client := common.SetupTestClient(t)
-	dataSet := common.CreateTestDataSet(t, client)
-	deps := BuildTestDependencies(client)
+	adminClient, appClient := common.SetupTestClientWithRLS(t)
+	dataSet := common.CreateTestDataSet(t, adminClient)
+	deps := BuildTestDependencies(appClient)
 
 	tests := []struct {
 		name           string
@@ -91,9 +91,9 @@ func TestUser_GetMe(t *testing.T) {
 func TestUser_UpdateMe(t *testing.T) {
 	t.Parallel()
 
-	client := common.SetupTestClient(t)
-	dataSet := common.CreateTestDataSet(t, client)
-	deps := BuildTestDependencies(client)
+	adminClient, appClient := common.SetupTestClientWithRLS(t)
+	dataSet := common.CreateTestDataSet(t, adminClient)
+	deps := BuildTestDependencies(appClient)
 
 	tests := []struct {
 		name           string
