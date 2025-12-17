@@ -1,3 +1,4 @@
+//go:generate mockgen -source=$GOFILE -destination=mock/$GOFILE -package=mock_pkg
 package pkg
 
 import "github.com/google/uuid"
