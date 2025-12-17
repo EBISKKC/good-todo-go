@@ -1,8 +1,11 @@
 package cerror
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 type AppError struct {
@@ -96,5 +99,37 @@ func NewValidationError(message string, details map[string]interface{}) *AppErro
 		Message:    message,
 		HTTPStatus: http.StatusBadRequest,
 		Details:    details,
+	}
+}
+
+// CustomHTTPErrorHandler is the custom error handler for Echo
+func CustomHTTPErrorHandler(err error, c echo.Context) {
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	var appErr *AppError
+	if errors.As(err, &appErr) {
+		if !c.Response().Committed {
+			_ = c.JSON(appErr.HTTPStatus, appErr)
+		}
+		return
+	}
+
+	// Handle Echo's HTTPError
+	if he, ok := err.(*echo.HTTPError); ok {
+		if !c.Response().Committed {
+			_ = c.JSON(he.Code, map[string]interface{}{
+				"code":    "HTTP_ERROR",
+				"message": he.Message,
+			})
+		}
+		return
+	}
+
+	// Default to internal server error
+	if !c.Response().Committed {
+		_ = c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"code":    ErrCodeInternalServerError,
+			"message": err.Error(),
+		})
 	}
 }
